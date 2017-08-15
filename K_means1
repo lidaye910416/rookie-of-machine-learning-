@@ -1,0 +1,46 @@
+from sklearn.cluster import KMeans
+#写成import sklearn.cluster.KMeans
+import numpy as np
+
+''' n_clusters:用于指定聚类中心的个数
+    init：初始聚类中心的初始化方法
+    max_iter:最大的迭代次数
+    一般调用时只用给出n_cluster即可，init默认k-means++，max_iter默认是300
+    data：加载的数据
+    label：聚类后个数据所属的标签
+    fit_predict():计算簇中心以及为簇分配序号
+    
+'''
+def loadData(filepath):
+    with open(filepath, 'r+') as p:
+        a = p.readlines()
+        #print(a)
+        cityname = []
+        cityconindex = []#存放消费指数等列表
+        for eachline in a:
+            item = eachline.strip().split(',')
+            #strip 返回一份 原字符串的拷贝，没有给定参数就去掉字符串开头或者结尾的\n\t等及空格
+            #split()返回一个列表
+            cityname.append(item[0])
+            # 答案里写的这句话非常经典 用一个列表解析解决了新建另一个for语句的麻烦
+            cityconindex.append([float(item[i]) for i in range(1, len(item))])
+    return cityname, cityconindex
+if __name__=='__main__':
+    cityname,data=loadData(r'/Users/pro/Desktop/python_script/mllearning/kmeans/cities.txt')
+    print(data)
+    print(np.array(data).shape)
+    #这是一个31*8的数据集，八列意味着八个不同的指标
+    km = KMeans(n_clusters = 4)#分成4类
+    label = km.fit_predict(data)#最常用方法，调用此方法会返回一个每个数据集所属聚类的编号
+    print(label)
+    print(km.cluster_centers_.shape)
+    print(km.cluster_centers_)#将为八个指标数据创建四个簇，每个簇针对八个指标数据都有一个簇中心，一共就有4*8个簇中心
+    expense = np.sum(km.cluster_centers_, axis=1)
+    #这里为什么要把四个簇中心的八个对应指标加在一起呢？？
+    print(expense)
+    cityclusters = [[],[],[],[]]
+    for i in range(len(cityname)):
+        cityclusters[label[i]].append(cityname[i])
+    for i in range(len(cityclusters)):
+        print('Expense:%.2f'%expense[i])
+        print(cityclusters[i])
